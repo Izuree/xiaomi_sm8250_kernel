@@ -3276,7 +3276,7 @@ static bool allow_direct_reclaim(pg_data_t *pgdat, bool using_kswapd)
 	return wmark_ok;
 }
 
-#define CRITICAL_OOM_SCORE_ADJ	(-900)
+#define CRITICAL_OOM_SCORE_ADJ        (-900)
 
 static __always_inline bool task_is_critical(void)
 {
@@ -3287,6 +3287,7 @@ static __always_inline bool task_is_critical(void)
 		return false;
 
 	return READ_ONCE(current->signal->oom_score_adj) <= CRITICAL_OOM_SCORE_ADJ;
+}
 }
 
 /*
