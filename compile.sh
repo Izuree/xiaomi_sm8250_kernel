@@ -170,7 +170,7 @@ clearbuild() {
 zipbuild() {
     echo "-- Zipping Kernel --"
     cd "$AK3_DIR" || exit 1
-    ZIP_NAME="E404R-${TYPE}-${TARGET}-$(date "+%y%m%d")-NOSUSFS.zip"
+    ZIP_NAME="E404R-${TYPE}-${TARGET}-$(date "+%y%m%d").zip"
     zip -r9 "$BASE_DIR/$ZIP_NAME" META-INF/ tools/ "${TARGET}"*-Image "${TARGET}"*-dtb "${TARGET}"*-dtbo.img anykernel.sh
     cd "$KERNEL_DIR" || exit 1
 }
@@ -262,12 +262,16 @@ makebuild() {
     # Config modifications
     sed -i '/CONFIG_KALLSYMS=/c\CONFIG_KALLSYMS=n' out/.config
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
-
-    # Compile without SUSFS only        
-    echo "-- Compiling without SUSFS --"
-    sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
-    export CCACHE_DIR="$BASE_DIR/ccache/.ccache_nosusfs$TC"
-
+            
+    if [[ "$1" == "SUSFS" ]]; then
+        echo "-- Compiling with SUSFS --"
+        sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=y' out/.config
+        export CCACHE_DIR="$BASE_DIR/ccache/.ccache_susfs$TC"
+    else
+        echo "-- Compiling without SUSFS --"
+        sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
+        export CCACHE_DIR="$BASE_DIR/ccache/.ccache_nosusfs$TC"
+    fi
     compilebuild
     # Show ccache stats after build
     echo "======== CCache Stats =========="
@@ -276,10 +280,10 @@ makebuild() {
     echo "================================"
 
     echo "-- Copying files to AnyKernel3 --"
-    rm -f "$AK3_DIR/${TARGET}-Image"
+    rm -f "$AK3_DIR/${TARGET}-$1-Image"
     rm -f "$AK3_DIR/${TARGET}-dtbo.img"
     rm -f "$AK3_DIR/${TARGET}-dtb"
-    cp "$K_IMG" "$AK3_DIR/${TARGET}-Image"
+    cp "$K_IMG" "$AK3_DIR/${TARGET}-$1-Image"
     cp "$K_DTBO" "$AK3_DIR/${TARGET}-dtbo.img"
     cp "$K_DTB" "$AK3_DIR/${TARGET}-dtb"
 }
