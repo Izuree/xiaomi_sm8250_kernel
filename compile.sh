@@ -19,7 +19,6 @@ TYPE="CI"
 TC="Unknown-Clang"
 TARGET=""
 DEFCONFIG=""
-SUSFS_MODE=""
 
 case "$*" in
     *st*)
@@ -68,16 +67,16 @@ case "$*" in
 esac
 
 # Device selection using arrays
-declare -A DEVICE_MAP=(
-    ["munch"]="MUNCH:vendor/munch_defconfig"
-    ["alioth"]="ALIOTH:vendor/alioth_defconfig"
-    ["apollo"]="APOLLO:vendor/apollo_defconfig"
-    ["pipa"]="PIPA:vendor/pipa_defconfig"
-    ["lmi"]="LMI:vendor/lmi_defconfig"
-    ["umi"]="UMI:vendor/umi_defconfig"
-    ["cmi"]="CMI:vendor/cmi_defconfig"
-    ["cas"]="CAS:vendor/cas_defconfig"
-)
+    declare -A DEVICE_MAP=(
+        ["munch"]="MUNCH:vendor/munch_defconfig"
+        ["alioth"]="ALIOTH:vendor/alioth_defconfig"
+        ["apollo"]="APOLLO:vendor/apollo_defconfig"
+        ["pipa"]="PIPA:vendor/pipa_defconfig"
+        ["lmi"]="LMI:vendor/lmi_defconfig"
+        ["umi"]="UMI:vendor/umi_defconfig"
+        ["cmi"]="CMI:vendor/cmi_defconfig"
+        ["cas"]="CAS:vendor/cas_defconfig"
+    )
 
 for device in "${!DEVICE_MAP[@]}"; do
     if [[ "$*" == *"$device"* ]]; then
@@ -124,7 +123,6 @@ build_msg() {
 <code>Device : $TARGET</code>
 <code>Branch : $BRANCH</code>
 <code>ToolCh : $TC</code>
-<code>SUSFS : $SUSFS_MODE</code>
 <b>Commit :</b>
 <code>$COMMIT</code>
 EOF
@@ -172,7 +170,7 @@ clearbuild() {
 zipbuild() {
     echo "-- Zipping Kernel --"
     cd "$AK3_DIR" || exit 1
-    ZIP_NAME="E404R-${TYPE}-${TARGET}-${SUSFS_MODE}-$(date "+%y%m%d").zip"
+    ZIP_NAME="E404R-${TYPE}-${TARGET}-$(date "+%y%m%d").zip"
     zip -r9 "$BASE_DIR/$ZIP_NAME" META-INF/ tools/ "${TARGET}"*-Image "${TARGET}"*-dtb "${TARGET}"*-dtbo.img anykernel.sh
     cd "$KERNEL_DIR" || exit 1
 }
@@ -261,23 +259,14 @@ compilebuild() {
 }
 
 makebuild() {
-    local build_type="$1"
-    
     # Config modifications
     sed -i '/CONFIG_KALLSYMS=/c\CONFIG_KALLSYMS=n' out/.config
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
-            
-    if [[ "$build_type" == "SUSFS" ]]; then
-        echo "-- Compiling with SUSFS --"
-        SUSFS_MODE="SUSFS"
-        sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=y' out/.config
-        export CCACHE_DIR="$BASE_DIR/ccache/.ccache_susfs$TC"
-    else
-        echo "-- Compiling without SUSFS --"
-        SUSFS_MODE="NOSUSFS"
-        sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
-        export CCACHE_DIR="$BASE_DIR/ccache/.ccache_nosusfs$TC"
-    fi
+    sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
+   
+    echo "-- Compiling Kernel --"
+    export CCACHE_DIR="$BASE_DIR/ccache/.ccache_$TC"
+
     compilebuild
     # Show ccache stats after build
     echo "======== CCache Stats =========="
@@ -286,34 +275,12 @@ makebuild() {
     echo "================================"
 
     echo "-- Copying files to AnyKernel3 --"
-    rm -f "$AK3_DIR/${TARGET}-${build_type}-Image"
+    rm -f "$AK3_DIR/${TARGET}-Image"
     rm -f "$AK3_DIR/${TARGET}-dtbo.img"
     rm -f "$AK3_DIR/${TARGET}-dtb"
-    cp "$K_IMG" "$AK3_DIR/${TARGET}-${build_type}-Image"
+    cp "$K_IMG" "$AK3_DIR/${TARGET}-Image"
     cp "$K_DTBO" "$AK3_DIR/${TARGET}-dtbo.img"
     cp "$K_DTB" "$AK3_DIR/${TARGET}-dtb"
-}
-
-ask_susfs_mode() {
-    echo ""
-    echo " ╔════════════════════════════════════╗"
-    echo " ║ Select SUSFS Mode                  ║"
-    echo " ║ 1. With SUSFS                      ║"
-    echo " ║ 2. Without SUSFS                   ║"
-    echo " ║ 3. Both (SUSFS and Non-SUSFS)      ║"
-    echo " ╚════════════════════════════════════╝"
-    echo -n " Enter your choice (1-3): "
-    read -r susfs_choice
-    
-    case "$susfs_choice" in
-        1) return 1 ;;  # SUSFS only
-        2) return 2 ;;  # Non-SUSFS only
-        3) return 3 ;;  # Both
-        *)
-            echo "-- !! Invalid option !! --"
-            ask_susfs_mode
-            ;;
-    esac
 }
 
 setupbuild
@@ -340,35 +307,11 @@ while true; do
             echo "-- Exported $DEFCONFIG to Out Dir --"
             ;;
         2)
-            ask_susfs_mode
-            susfs_choice=$?
-            
             TIME_START="$(date +"%s")"
             rm -f "$BASE_DIR/compile.log"
-            
-            case $susfs_choice in
-                1)
-                    SUSFS_MODE="SUSFS"
-                    build_msg
-                    clearbuild
-                    makebuild "SUSFS" 2>&1 | tee -a "$BASE_DIR/compile.log"
-                    ;;
-                2)
-                    SUSFS_MODE="NOSUSFS"
-                    build_msg
-                    clearbuild
-                    makebuild "NOSUSFS" 2>&1 | tee -a "$BASE_DIR/compile.log"
-                    ;;
-                3)
-                    SUSFS_MODE="BOTH"
-                    build_msg
-                    clearbuild
-                    makebuild "SUSFS" 2>&1 | tee -a "$BASE_DIR/compile.log"
-                    clearbuild
-                    makebuild "NOSUSFS" 2>&1 | tee -a "$BASE_DIR/compile.log"
-                    ;;
-            esac
-            
+            build_msg
+            clearbuild
+            makebuild 2>&1 | tee -a "$BASE_DIR/compile.log"
             zipbuild
             uploadbuild
             TIME_END=$(("$(date +"%s")" - "$TIME_START"))
