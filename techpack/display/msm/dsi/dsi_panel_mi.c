@@ -1071,7 +1071,7 @@ param_count = greenish_gamma_cfg->greenish_gamma_update_param_count;
 for (i = 1; i <= param_count; i++) {
 	switch (i) {
 	case 1: {
-		u8 custom_offset = offset - 0x96 ;  // +3 more green reduction for 1st param
+		u8 custom_offset = offset + 0x64 ;  // +3 more green reduction for 1st param
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_GAMMA_READ_1ST_PRE);
 		if (rc) {
 			pr_err("Failed to send DSI_CMD_SET_MI_GAMMA_READ_1ST_PRE command\n");
@@ -1109,7 +1109,7 @@ for (i = 1; i <= param_count; i++) {
 		break;
 	}
 	case 2: {
-		u8 custom_offset = offset + 0xC8;  // -4 less green reduction for 2nd param
+		u8 custom_offset = offset + 0x26C;  // -4 less green reduction for 2nd param
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_GAMMA_READ_2ND_PRE);
 		if (rc) {
 			pr_err("Failed to send DSI_CMD_SET_MI_GAMMA_READ_2ND_PRE command\n");
@@ -1147,7 +1147,7 @@ for (i = 1; i <= param_count; i++) {
 		break;
 	}
 	case 3: {
-		u8 custom_offset = offset + 0xC8;  // +3 more green reduction for 3rd param
+		u8 custom_offset = offset + 0x320;  // +3 more green reduction for 3rd param
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_GAMMA_READ_3RD_PRE);
 		if (rc) {
 			pr_err("Failed to send DSI_CMD_SET_MI_GAMMA_READ_3RD_PRE command\n");
@@ -1185,7 +1185,7 @@ for (i = 1; i <= param_count; i++) {
 		break;
 	}
 	case 4: {
-		u8 custom_offset = offset + 0xC8;  // +2 more green reduction for 4th param
+		u8 custom_offset = offset + 0x320;  // +2 more green reduction for 4th param
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_GAMMA_READ_4TH_PRE);
 		if (rc) {
 			pr_err("Failed to send DSI_CMD_SET_MI_GAMMA_READ_4TH_PRE command\n");
@@ -1223,7 +1223,7 @@ for (i = 1; i <= param_count; i++) {
 		break;
 	}
 	case 5: {
-		u8 custom_offset = offset + 0xC8;  // +2 less green reduction for 5th param
+		u8 custom_offset = offset + 0xB4;  // +2 less green reduction for 5th param
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_GAMMA_READ_5TH_PRE);
 		if (rc) {
 			pr_err("Failed to send DSI_CMD_SET_MI_GAMMA_READ_5TH_PRE command\n");
@@ -1261,7 +1261,7 @@ for (i = 1; i <= param_count; i++) {
 		break;
 	}
 	case 6: {
-		u8 custom_offset = offset + 0x01;  // +1 less green reduction for 6th param
+		u8 custom_offset = offset - 0x28A ;  // +1 less green reduction for 6th param
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_MI_GAMMA_READ_6TH_PRE);
 		if (rc) {
 			pr_err("Failed to send DSI_CMD_SET_MI_GAMMA_READ_6TH_PRE command\n");
