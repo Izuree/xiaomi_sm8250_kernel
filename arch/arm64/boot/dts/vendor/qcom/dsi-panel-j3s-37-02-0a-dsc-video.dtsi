@@ -57,7 +57,7 @@
 		qcom,mdss-dsi-pan-enable-dynamic-fps;
 		qcom,mdss-dsi-pan-fps-update =
 				"dfps_immediate_porch_mode_vfp";
-		qcom,dsi-supported-dfps-list = <144 120 90 60 50 48 30>;
+		qcom,dsi-supported-dfps-list = <144 120 90 60>;
 
 		qcom,mdss-dsi-display-timings {
 			timing@0{
@@ -220,15 +220,6 @@
 				qcom,mdss-dsc-bit-per-component = <8>;
 				qcom,mdss-dsc-bit-per-pixel = <8>;
 				qcom,mdss-dsc-block-prediction-enable;
-
-				qcom,mdss-dsi-panel-phy-timings = [
-					00 21 08 08 25 22 09
-					08 06 02 04 00 1B 18
-				];
-
-				/* 1xLM, 1xDSC Enc, 1xDSI Intf */
-				qcom,display-topology = <1 1 1>;
-				qcom,default-topology-index = <0>;
 			};
 		};
 	};
@@ -241,7 +232,7 @@
 	mi,esd-err-irq-gpio = <&tlmm 51 0x2002>; /* trig-flags: falling-0x0002 rasing-0x0001*/
 	mi,mdss-dsi-panel-xy-coordinate = <0x6 0x18>;
 	mi,mdss-dsi-panel-max-luminance = <0x6 0x4>;
-	mi,mdss-dsi-pan-enable-smart-fps;
+	/* mi,mdss-dsi-pan-enable-smart-fps; */
 	mi,mdss-dsi-panel-max-brightness-clone = <8191>;
 
 	qcom,mdss-dsi-display-timings {
