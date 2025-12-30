@@ -8,16 +8,10 @@
  * See kernel/stop_machine.c
  */
 #include "sched.h"
-#include "walt.h"
 
 #ifdef CONFIG_SMP
 static int
-#ifdef CONFIG_SCHED_WALT
-select_task_rq_stop(struct task_struct *p, int cpu, int sd_flag, int flags,
-		    int sibling_count_hint)
-#else
-select_task_rq_stop(struct task_struct *p, int cpu, int sd_flag, int flags)
-#endif
+select_task_rq_stop(struct task_struct *p, int cpu, int flags)
 {
 	return task_cpu(p); /* stop tasks as never migrate */
 }
@@ -78,21 +72,7 @@ static void yield_task_stop(struct rq *rq)
 
 static void put_prev_task_stop(struct rq *rq, struct task_struct *prev)
 {
-	struct task_struct *curr = rq->curr;
-	u64 delta_exec;
-
-	delta_exec = rq_clock_task(rq) - curr->se.exec_start;
-	if (unlikely((s64)delta_exec < 0))
-		delta_exec = 0;
-
-	schedstat_set(curr->se.statistics.exec_max,
-			max(curr->se.statistics.exec_max, delta_exec));
-
-	curr->se.sum_exec_runtime += delta_exec;
-	account_group_exec_runtime(curr, delta_exec);
-
-	curr->se.exec_start = rq_clock_task(rq);
-	cgroup_account_cputime(curr, delta_exec);
+	update_curr_common(rq);
 }
 
 /*
@@ -116,12 +96,6 @@ static void
 prio_changed_stop(struct rq *rq, struct task_struct *p, int oldprio)
 {
 	BUG(); /* how!?, what priority? */
-}
-
-static unsigned int
-get_rr_interval_stop(struct rq *rq, struct task_struct *task)
-{
-	return 0;
 }
 
 static void update_curr_stop(struct rq *rq)
@@ -153,12 +127,7 @@ const struct sched_class stop_sched_class = {
 
 	.task_tick		= task_tick_stop,
 
-	.get_rr_interval	= get_rr_interval_stop,
-
 	.prio_changed		= prio_changed_stop,
 	.switched_to		= switched_to_stop,
 	.update_curr		= update_curr_stop,
-#ifdef CONFIG_SCHED_WALT
-	.fixup_walt_sched_stats	= fixup_walt_sched_stats_common,
-#endif
 };
