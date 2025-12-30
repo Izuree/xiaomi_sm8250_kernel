@@ -234,8 +234,6 @@ setupbuild() {
         export CROSS_COMPILE="aarch64-linux-"
         export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     fi
-    export KBUILD_BUILD_TIMESTAMP="Fri Oct 24 00:00:00 UTC 2024"
-
 }
 
 errorbuild() {
@@ -258,7 +256,6 @@ compilebuild() {
         echo "-- Compiling with GCC --"
         make "${make_flags[@]}" || errorbuild
     fi
-
 }
 
 makebuild() {
@@ -267,11 +264,11 @@ makebuild() {
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
     sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
     echo 0 > out/.version
+            
     echo "-- Compiling Kernel --"
     export CCACHE_DIR="$BASE_DIR/ccache/.ccache_$TC"
 
-    compilebuild & echo '#define UTS_RELEASE "5.10.404R"' > out/include/generated/utsrelease.h
-
+    compilebuild
     # Show ccache stats after build
     echo "======== CCache Stats =========="
     ccache -p | grep cache_dir
