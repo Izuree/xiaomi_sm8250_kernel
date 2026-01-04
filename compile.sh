@@ -170,7 +170,7 @@ clearbuild() {
 zipbuild() {
     echo "-- Zipping Kernel --"
     cd "$AK3_DIR" || exit 1
-    ZIP_NAME="E404R-${TYPE}-${TARGET}-$(date "+%y%m%d")-NOSUSFS.zip"
+    ZIP_NAME="E404R-${TYPE}-${TARGET}-$(date "+%y%m%d")-OC.zip"
     zip -r9 "$BASE_DIR/$ZIP_NAME" META-INF/ tools/ "${TARGET}"*-Image "${TARGET}"*-dtb "${TARGET}"*-dtbo.img anykernel.sh
     cd "$KERNEL_DIR" || exit 1
 }
@@ -234,7 +234,7 @@ setupbuild() {
         export CROSS_COMPILE="aarch64-linux-"
         export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     fi
-    export KBUILD_BUILD_TIMESTAMP="$(date -d '1 year ago' '+%a %b %d %H:%M:%S %Z %Y')"
+    #export KBUILD_BUILD_TIMESTAMP="$(date -d '1 year ago' '+%a %b %d %H:%M:%S %Z %Y')"
 }
 
 errorbuild() {
@@ -263,7 +263,7 @@ makebuild() {
     # Config modifications
     sed -i '/CONFIG_KALLSYMS=/c\CONFIG_KALLSYMS=n' out/.config
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
-    sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
+    #sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
     echo 0 > out/.version
     
     echo "-- Compiling Kernel --"
