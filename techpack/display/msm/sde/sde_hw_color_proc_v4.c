@@ -8,6 +8,7 @@
 #include "sde_hw_color_proc_common_v4.h"
 #include "sde_hw_color_proc_v4.h"
 
+#ifdef CONFIG_BOARD_LMI
 static unsigned short kcal_red = 204;
 static unsigned short kcal_green = 187;
 static unsigned short kcal_blue = 255;
@@ -15,6 +16,15 @@ static unsigned short kcal_hue = 0;
 static unsigned short kcal_sat = 269;
 static unsigned short kcal_val = 262;
 static unsigned short kcal_cont = 269;
+#else
+static unsigned short kcal_red = 255;
+static unsigned short kcal_green = 255;
+static unsigned short kcal_blue = 255;
+static unsigned short kcal_hue = 0;
+static unsigned short kcal_sat = 255;
+static unsigned short kcal_val = 255;
+static unsigned short kcal_cont = 255;
+#endif
 
 module_param(kcal_red, short, 0644);
 module_param(kcal_green, short, 0644);
