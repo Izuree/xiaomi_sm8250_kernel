@@ -261,6 +261,9 @@ compilebuild() {
 
 makebuild() {
     # Config modifications
+    export KBUILD_BUILD_USER="vyn"
+    export KBUILD_BUILD_HOST="zorin"
+
     sed -i '/CONFIG_KALLSYMS=/c\CONFIG_KALLSYMS=n' out/.config
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
     sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
