@@ -703,12 +703,14 @@ endif
 
 ifeq ($(cc-name),clang)
 KBUILD_CFLAGS   += -mllvm -hot-cold-split=true
-KBUILD_CFLAGS   += -mllvm -regalloc-enable-advisor=release
-KBUILD_LDFLAGS  += -mllvm -regalloc-enable-advisor=release
-KBUILD_LDFLAGS  += -mllvm -enable-ml-inliner=release
 
-KBUILD_CFLAGS   += -mcpu=cortex-a55
-KBUILD_AFLAGS   += -mcpu=cortex-a55
+KBUILD_CFLAGS  += $(call cc-option,-mllvm -enable-ml-inliner=release)
+KBUILD_CFLAGS  += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
+KBUILD_LDFLAGS += $(call cc-option,-mllvm -enable-ml-inliner=release)
+KBUILD_LDFLAGS += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
+
+KBUILD_CFLAGS   += -march=armv8.2-a+lse+crypto+dotprod
+KBUILD_AFLAGS   += -march=armv8.2-a+lse+crypto+dotprod
 else
 KBUILD_CFLAGS	+= -fgraphite-identity -floop-nest-optimize
 KBUILD_CFLAGS	+= -fipa-pta -fgcse-sm
