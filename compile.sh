@@ -241,6 +241,7 @@ setupbuild() {
         export CROSS_COMPILE="aarch64-linux-"
         export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     fi
+    export KBUILD_BUILD_TIMESTAMP="$(date -d '1 year ago' '+%a %b %d %H:%M:%S %Z %Y')"
 }
 
 errorbuild() {
@@ -267,9 +268,12 @@ compilebuild() {
 
 makebuild() {
     # Config modifications
+    export KBUILD_BUILD_USER="vyn"
+    export KBUILD_BUILD_HOST="zorin"
     sed -i '/CONFIG_KALLSYMS=/c\CONFIG_KALLSYMS=n' out/.config
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
     sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
+    echo 0 > out/.version
    
     echo "-- Compiling Kernel --"
     export CCACHE_DIR="$BASE_DIR/ccache/.ccache_$TC"
