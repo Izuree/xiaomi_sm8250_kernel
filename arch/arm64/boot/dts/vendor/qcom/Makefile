@@ -55,12 +55,6 @@ dtbo-$(CONFIG_BOARD_PIPA) += \
 pipa-sm8250-overlay.dtbo-base := kona-v2.1.dtb
 endif
 
-ifeq ($(CONFIG_BOARD_PIPA),y)
-dtbo-$(CONFIG_BOARD_PIPA) += \
-                pipa-sm8250-overlay.dtbo
-pipa-sm8250-overlay.dtbo-base := kona-v2.1.dtb
-endif
-
 ifeq ($(CONFIG_BOARD_THYME),y)
 dtbo-$(CONFIG_BOARD_THYME) += \
                 thyme-sm8250-overlay.dtbo

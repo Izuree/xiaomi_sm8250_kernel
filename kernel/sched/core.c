@@ -2578,22 +2578,19 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 		p->sched_class->task_woken(rq, p);
 		rq_repin_lock(rq, rf);
 	}
-
-	if (rq->idle_stamp) {
-		u64 delta = rq_clock(rq) - rq->idle_stamp;
-		u64 max = 2*rq->max_idle_balance_cost;
-
-		update_avg(&rq->avg_idle, delta);
-
-		if (rq->avg_idle > max)
-			rq->avg_idle = max;
-
-		rq->wake_stamp = jiffies;
-		rq->wake_avg_idle = rq->avg_idle / 2;
-
-		rq->idle_stamp = 0;
-	}
 #endif
+}
+
+void update_rq_avg_idle(struct rq *rq)
+{
+	u64 delta = rq_clock(rq) - rq->idle_stamp;
+	u64 max = 2*rq->max_idle_balance_cost;
+
+	update_avg(&rq->avg_idle, delta);
+
+	if (rq->avg_idle > max)
+		rq->avg_idle = max;
+	rq->idle_stamp = 0;
 }
 
 static void
@@ -7480,8 +7477,6 @@ void __init sched_init(void)
 		rq->online = 0;
 		rq->idle_stamp = 0;
 		rq->avg_idle = 2*sysctl_sched_migration_cost;
-		rq->wake_stamp = jiffies;
-		rq->wake_avg_idle = rq->avg_idle;
 		rq->max_idle_balance_cost = sysctl_sched_migration_cost;
 
 		INIT_LIST_HEAD(&rq->cfs_tasks);
@@ -7901,6 +7896,8 @@ void sched_move_task(struct task_struct *tsk)
 		 * resched to make sure that task can still run.
 		 */
 		resched_curr(rq);
+	} else if (queued) {
+		check_preempt_curr(rq, tsk, 0);
 	}
 
 	task_rq_unlock(rq, tsk, &rf);
@@ -8244,8 +8241,8 @@ static void uclamp_set(struct cgroup_subsys_state *css)
 		{"top-app",             "0", "max",  1},
        		{"foreground",          "0",  "80",  0},
                 {"dex2oat",             "0",  "30",  0},
-        	{"background",          "0",  "30",  0},
-        	{"system-background",   "0",  "50",  0},
+        	{"background",          "0",  "15",  0},
+        	{"system-background",   "0",  "25",  0},
 	};
 
         if(!css->cgroup->kn)
