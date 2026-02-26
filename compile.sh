@@ -32,6 +32,11 @@ case "$*" in
 esac
 
 case "$*" in
+
+    *gf*)
+        export PATH="$BASE_DIR/toolchains/gf-clang/bin:$PATH"
+        TC="Gf-Clang"
+        ;;
     *aosp*)
         export PATH="$BASE_DIR/toolchains/aosp-clang/bin:$PATH"
         TC="AOSP-Clang"
@@ -64,6 +69,9 @@ case "$*" in
         if [[ -d "$BASE_DIR/toolchains/lilium-clang" ]]; then
             export PATH="$BASE_DIR/toolchains/lilium-clang/bin:$PATH"
             TC="Lilium-Clang"
+        elif [[ -d "$BASE_DIR/toolchains/gf-clang" ]]; then
+            export PATH="$BASE_DIR/toolchains/gf-clang/bin:$PATH"
+            TC="Gf-Clang"
         elif [[ -d "$BASE_DIR/toolchains/aosp-clang" ]]; then
             export PATH="$BASE_DIR/toolchains/aosp-clang/bin:$PATH"
             TC="AOSP-Clang"
