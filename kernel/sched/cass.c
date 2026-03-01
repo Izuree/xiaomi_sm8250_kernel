@@ -172,8 +172,6 @@ static int cass_best_cpu(struct task_struct *p, int prev_cpu, bool sync, bool rt
 	bool has_idle = false;
 	int cidx = 0, cpu, prev_llc_id;
 
-	memset(cands, 0, sizeof(cands));
-
 	/*
 	 * Get the utilization and uclamp minimum threshold for this task. Note
 	 * that RT tasks don't have per-entity load tracking.
