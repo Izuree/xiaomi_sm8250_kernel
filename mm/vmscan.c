@@ -3288,7 +3288,6 @@ static __always_inline bool task_is_critical(void)
 
 	return READ_ONCE(current->signal->oom_score_adj) <= CRITICAL_OOM_SCORE_ADJ;
 }
-}
 
 /*
  * Throttle direct reclaimers if backing storage is backed by the network

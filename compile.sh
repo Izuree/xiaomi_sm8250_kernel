@@ -15,7 +15,7 @@ AK3_DIR="$BASE_DIR/AnyKernel3"
 [[ ! -d "$AK3_DIR" ]] && echo "!! Please Provide AnyKernel3 !!" && exit 1
 
 # Parse command line arguments
-TYPE="CI"
+TYPE="BPF"
 TC="Unknown-Clang"
 TARGET=""
 DEFCONFIG=""
@@ -32,6 +32,11 @@ case "$*" in
 esac
 
 case "$*" in
+
+    *gf*)
+        export PATH="$BASE_DIR/toolchains/gf-clang/bin:$PATH"
+        TC="Gf-Clang"
+        ;;
     *aosp*)
         export PATH="$BASE_DIR/toolchains/aosp-clang/bin:$PATH"
         TC="AOSP-Clang"
@@ -64,6 +69,9 @@ case "$*" in
         if [[ -d "$BASE_DIR/toolchains/lilium-clang" ]]; then
             export PATH="$BASE_DIR/toolchains/lilium-clang/bin:$PATH"
             TC="Lilium-Clang"
+        elif [[ -d "$BASE_DIR/toolchains/gf-clang" ]]; then
+            export PATH="$BASE_DIR/toolchains/gf-clang/bin:$PATH"
+            TC="Gf-Clang"
         elif [[ -d "$BASE_DIR/toolchains/aosp-clang" ]]; then
             export PATH="$BASE_DIR/toolchains/aosp-clang/bin:$PATH"
             TC="AOSP-Clang"
@@ -184,7 +192,7 @@ clearbuild() {
 zipbuild() {
     echo "-- Zipping Kernel --"
     cd "$AK3_DIR" || exit 1
-    ZIP_NAME="E404R-BPF-${TARGET}-$(date "+%y%m%d").zip"
+    ZIP_NAME="E404R-${TYPE}-${TARGET}-$(date "+%y%m%d")-CORTISOL.zip"
     zip -r9 "$BASE_DIR/$ZIP_NAME" META-INF/ tools/ "${TARGET}"*-Image "${TARGET}"*-dtb "${TARGET}"*-dtbo.img anykernel.sh
     cd "$KERNEL_DIR" || exit 1
 }
@@ -248,6 +256,7 @@ setupbuild() {
         export CROSS_COMPILE="aarch64-linux-"
         export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
     fi
+    export KBUILD_BUILD_TIMESTAMP="$(date -d '1 year ago' '+%a %b %d %H:%M:%S %Z %Y')"
 }
 
 errorbuild() {
@@ -274,9 +283,13 @@ compilebuild() {
 
 makebuild() {
     # Config modifications
+    #export KBUILD_BUILD_USER="vyn"
+    #export KBUILD_BUILD_HOST="zorin"
     sed -i '/CONFIG_KALLSYMS=/c\CONFIG_KALLSYMS=n' out/.config
     sed -i '/CONFIG_KALLSYMS_BASE_RELATIVE=/c\CONFIG_KALLSYMS_BASE_RELATIVE=n' out/.config
-            
+    #sed -i '/CONFIG_KSU_SUSFS=/c\CONFIG_KSU_SUSFS=n' out/.config
+    echo 0 > out/.version
+   
     echo "-- Compiling Kernel --"
     export CCACHE_DIR="$BASE_DIR/ccache/.ccache_$TC"
 
