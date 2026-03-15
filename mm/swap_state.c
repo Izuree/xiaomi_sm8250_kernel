@@ -25,7 +25,7 @@
 #include <asm/pgtable.h>
 #include "internal.h"
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 

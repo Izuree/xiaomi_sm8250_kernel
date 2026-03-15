@@ -22,7 +22,7 @@
 #include <linux/suspend.h>
 #include <drm/drm_notifier_mi.h>
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 

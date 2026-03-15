@@ -28,7 +28,7 @@ endif
 ifeq ($(CONFIG_BOARD_DAGU),y)
 dtbo-$(CONFIG_BOARD_DAGU) += \
                 dagu-sm8250-overlay.dtbo
-dagu-sm8250-overlay.dtbo-base :=  kona-v2.1.dtb
+dagu-sm8250-overlay.dtbo-base := kona-v2.1.dtb
 endif
 
 ifeq ($(CONFIG_BOARD_ELISH),y)

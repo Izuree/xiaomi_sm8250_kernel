@@ -2103,13 +2103,16 @@ static int fg_gen4_get_batt_profile(struct fg_dev *fg)
 
 #ifdef CONFIG_E404_SIGNATURE
 		/* force alioth to load 5000mah profile if user wanted */
-		if (e404_data.batt_profile == 2 && !fg->profile_already_find) {
-			pr_alert("E404: forcing j3ssun_5000mah profile\n");
-			fg->profile_already_find = true;
-			profile_node = of_batterydata_get_best_profile(
-								batt_node,
-								fg->batt_id_ohms / 1000,
-								"j3ssun_5000mah");
+		if (e404_data.batt_profile == 2) {
+			if (of_property_read_bool(node, "qcom,j3s-batt-profile") && !fg->profile_already_find) {
+				pr_alert("E404: forcing j3ssun_5000mah profile\n");
+				fg->profile_already_find = true;
+				/* Avoid retry queueing if verify/retry path exists */
+            	retry_batt_profile = BATT_PROFILE_RETRY_COUNT_MAX;
+				profile_node = of_batterydata_get_best_profile(batt_node,
+									fg->batt_id_ohms / 1000,
+									"j3ssun_5000mah");
+			}
 		}
 #endif
 
@@ -2176,11 +2179,11 @@ static int fg_gen4_get_batt_profile(struct fg_dev *fg)
 						fg->batt_id_ohms / 1000, "j2gybm4n_4780mah");
 			} else {
 				if (chip->dt.k11a_batt_profile) {
-					pr_warn("verify battery fail. use default profile k11a_fmt_4520mah\n");
+					pr_warn("verifty battery fail. use default profile k11a_fmt_4520mah\n");
 					profile_node = of_batterydata_get_best_profile(batt_node,
 						fg->batt_id_ohms / 1000, "K11A_FMT_4520mah");
 				} else if (chip->dt.j3s_batt_profile) {
-					pr_warn("verify battery fail. use default profile j3ssun_5000mah\n");
+					pr_warn("verifty battery fail. use default profile j3ssun_5000mah\n");
 					profile_node = of_batterydata_get_best_profile(batt_node,
 						fg->batt_id_ohms / 1000, "j3ssun_5000mah");
 				} else {

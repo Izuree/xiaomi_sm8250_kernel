@@ -101,7 +101,7 @@
 
 #include "../../lib/kstrtox.h"
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 struct task_kill_info {
 	struct task_struct *task;
@@ -1062,7 +1062,7 @@ static int __set_oom_adj(struct file *file, int oom_adj, bool legacy)
 {
 	struct mm_struct *mm = NULL;
 	struct task_struct *task;
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	char task_comm[TASK_COMM_LEN];
 #endif
 	int err = 0;
@@ -1114,7 +1114,7 @@ static int __set_oom_adj(struct file *file, int oom_adj, bool legacy)
 	if (likely(!legacy) && has_capability_noaudit(current, CAP_SYS_RESOURCE))
 		task->signal->oom_score_adj_min = (short)oom_adj;
 	trace_oom_score_adj_update(task);
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (oom_adj >= 700)
 		strncpy(task_comm, task->comm, TASK_COMM_LEN);
 #endif
@@ -1145,7 +1145,7 @@ static int __set_oom_adj(struct file *file, int oom_adj, bool legacy)
 err_unlock:
 	mutex_unlock(&oom_adj_mutex);
 	put_task_struct(task);
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	/* Choke fuckass apps from background */
 	if (!err && oom_adj >= 700) {
 		if (e404_comm_blocked(task->comm)) {

@@ -18,7 +18,7 @@
 #include <linux/backing-dev.h>
 #include "internal.h"
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 
@@ -167,7 +167,7 @@ SYSCALL_DEFINE1(syncfs, int, fd)
 	struct super_block *sb;
 	int ret, ret2;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif
@@ -201,7 +201,7 @@ int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct inode *inode = file->f_mapping->host;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif
@@ -224,7 +224,7 @@ EXPORT_SYMBOL(vfs_fsync_range);
  */
 int vfs_fsync(struct file *file, int datasync)
 {
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif
@@ -237,7 +237,7 @@ static int do_fsync(unsigned int fd, int datasync)
 	struct fd f = fdget(fd);
 	int ret = -EBADF;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif
@@ -252,7 +252,7 @@ static int do_fsync(unsigned int fd, int datasync)
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif
@@ -261,7 +261,7 @@ SYSCALL_DEFINE1(fsync, unsigned int, fd)
 
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
 {
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif
@@ -324,7 +324,7 @@ int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes,
 	loff_t endbyte;			/* inclusive */
 	umode_t i_mode;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (!e404_data.file_sync)
 		return 0;
 #endif

@@ -19,7 +19,7 @@
 #define SWAP_NANDSWAP_PRIO	2020	/* just a magic number */
 #endif
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 

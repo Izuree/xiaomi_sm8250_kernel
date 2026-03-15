@@ -1467,6 +1467,12 @@ sd_init(struct sched_domain_topology_level *tl,
 		.newidle_ratio		= 512,
 
 		.smt_gain		= 0,
+
+		/* 50% success rate */
+		.newidle_call		= 512,
+		.newidle_success	= 256,
+		.newidle_ratio		= 512,
+
 		.max_newidle_lb_cost	= 0,
 		.last_decay_max_lb_cost	= jiffies,
 		.child			= child,

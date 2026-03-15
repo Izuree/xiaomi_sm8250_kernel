@@ -2,6 +2,7 @@
 /*
  * Scheduler internal types and methods:
  */
+#include <linux/prandom.h>
 #include <linux/sched.h>
 
 #include <linux/prandom.h>
@@ -1145,6 +1146,13 @@ static inline int cpu_of(struct rq *rq)
 #endif
 }
 
+DECLARE_PER_CPU(struct rnd_state, sched_rnd_state);
+
+static inline u32 sched_rng(void)
+{
+	return prandom_u32_state(this_cpu_ptr(&sched_rnd_state));
+}
+
 struct sched_group;
 #ifdef CONFIG_SCHED_CORE
 static inline struct cpumask *sched_group_span(struct sched_group *sg);
@@ -1816,6 +1824,17 @@ static inline int task_on_rq_migrating(struct task_struct *p)
 #define WF_RQ_SELECTED		0x80 /* ->select_task_rq() was called */
 
 #ifdef CONFIG_SMP
+static_assert(WF_EXEC == SD_BALANCE_EXEC);
+static_assert(WF_FORK == SD_BALANCE_FORK);
+static_assert(WF_TTWU == SD_BALANCE_WAKE);
+#endif
+
+#define WF_SYNC     0x10 /* Waker goes to sleep after wakeup */
+#define WF_MIGRATED 0x20 /* Internal use, task got migrated */
+#define WF_ON_CPU   0x40 /* Wakee is on_cpu */
+#define WF_RQ_SELECTED		0x80 /* ->select_task_rq() was called */
+
+#ifdef CONFIG_SMP
 enum {
     __wf_exec_mismatch = BUILD_BUG_ON_ZERO(WF_EXEC  != SD_BALANCE_EXEC),
     __wf_fork_mismatch = BUILD_BUG_ON_ZERO(WF_FORK  != SD_BALANCE_FORK),
@@ -1907,9 +1926,8 @@ struct sched_class {
 
 #ifdef CONFIG_SMP
 	int (*balance)(struct rq *rq, struct task_struct *prev, struct rq_flags *rf);
-	int  (*select_task_rq)(struct task_struct *p, int task_cpu, int flags);
+        int  (*select_task_rq)(struct task_struct *p, int task_cpu, int flags);
 	struct task_struct * (*pick_task)(struct rq *rq);
-
 	void (*migrate_task_rq)(struct task_struct *p, int new_cpu);
 
 	void (*task_woken)(struct rq *this_rq, struct task_struct *task);

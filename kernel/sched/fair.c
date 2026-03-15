@@ -897,7 +897,7 @@ static struct sched_entity *__pick_eevdf(struct cfs_rq *cfs_rq, bool protect)
 	if (sched_feat(PICK_BUDDY) &&
 	    cfs_rq->next && entity_eligible(cfs_rq, cfs_rq->next)) {
 		/* ->next will never be delayed */
-		WARN_ON_ONCE(cfs_rq->next->sched_delayed);
+		SCHED_WARN_ON(cfs_rq->next->sched_delayed);
 		return cfs_rq->next;
 	}
 
@@ -1120,45 +1120,6 @@ static void update_tg_load_avg(struct cfs_rq *cfs_rq)
 #endif /* CONFIG_SMP */
 
 static void set_next_buddy(struct sched_entity *se);
-
-static s64 update_curr_se(struct rq *rq, struct sched_entity *curr)
-{
-	u64 now = rq_clock_task(rq);
-	s64 delta_exec;
-
-	delta_exec = now - curr->exec_start;
-	if (unlikely(delta_exec <= 0))
-		return delta_exec;
-
-	curr->exec_start = now;
-	curr->sum_exec_runtime += delta_exec;
-
-	schedstat_set(curr->statistics.exec_max,
-		      max(delta_exec, curr->statistics.exec_max));
-
-	return delta_exec;
-}
-
-/*
- * Used by other classes to account runtime.
- */
-s64 update_curr_common(struct rq *rq)
-{
-	struct task_struct *curr = rq->curr;
-	s64 delta_exec;
-
-	delta_exec = update_curr_se(rq, &curr->se);
-	if (unlikely(delta_exec <= 0))
-		return delta_exec;
-
-	schedstat_set(curr->se.statistics.exec_max,
-			max(curr->se.statistics.exec_max, delta_exec));
-
-	account_group_exec_runtime(curr, delta_exec);
-	cgroup_account_cputime(curr, delta_exec);
-
-	return delta_exec;
-}
 
 /*
  * Update the current task's runtime statistics.
@@ -3272,7 +3233,7 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		update_load_add(&cfs_rq->load, se->load.weight);
 		if (!curr)
 			__enqueue_entity(cfs_rq, se);
-		cfs_rq->nr_running++;
+		cfs_rq->nr_queued++;
 	}
 }
 
@@ -7995,7 +7956,6 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
 		new_cpu = find_idlest_cpu(sd, p, cpu, prev_cpu, sd_flag);
 	} else if (wake_flags & WF_TTWU) { /* XXX always ? */
 		/* Fast path */
-
 		new_cpu = select_idle_sibling(p, prev_cpu, new_cpu);
 	}
 	rcu_read_unlock();
@@ -8397,7 +8357,7 @@ idle:
 		new_tasks = newidle_balance(rq, rf);
 
 		/*
-		 * Because newidle_balance() releases (and re-acquires)
+		 * Because sched_balance_newidle() releases (and re-acquires)
 		 * rq->lock, it is possible for any higher priority task to
 		 * appear. In that case we must re-start the pick_next_entity()
 		 * loop.
@@ -12010,8 +11970,8 @@ static int newidle_balance(struct rq *this_rq, struct rq_flags *rf)
 		goto out;
 	}
 
-	if (!get_rd_overload(this_rq->rd) ||
-	    this_rq->avg_idle < sd->max_newidle_lb_cost) {
+	if (!READ_ONCE(this_rq->rd->overload) ||
+	    avg_idle < sd->max_newidle_lb_cost) {
 
 		update_next_balance(sd, &next_balance);
 		rcu_read_unlock();

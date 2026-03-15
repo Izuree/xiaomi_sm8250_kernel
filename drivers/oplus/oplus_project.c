@@ -502,17 +502,18 @@ static int projects_open(struct inode *inode, struct file *file)
     return single_open(file, project_read_func, PDE_DATA(inode));
 }
 
-static const struct proc_ops project_info_fops = {
-    .proc_open  = projects_open,
-    .proc_read  = seq_read,
-    .proc_release = single_release,
+static const struct file_operations project_info_fops = {
+    .owner = THIS_MODULE,
+    .open  = projects_open,
+    .read  = seq_read,
+    .release = single_release,
 };
 
 static int __init oplus_project_init(void)
 {
     struct proc_dir_entry *p_entry;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
     if (e404_data.rom_type != 3) {
         pr_alert("E404: Skipping oplus project init\n");
         return 0;

@@ -31,7 +31,7 @@
 #include "mi_disp_nvt_alpha_data.h"
 #include "mi_disp_lhbm.h"
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 
@@ -313,7 +313,7 @@ static int dsi_panel_parse_smart_fps_config(struct dsi_panel *panel,
 
 	mi_cfg->idle_mode_flag = true;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (e404_data.rom_type == 2) {
 		mi_cfg->smart_fps_support = 0;
 		pr_alert("E404: forcing mi smart fps off for ur shitty stock rom\n");
@@ -987,6 +987,34 @@ int dsi_panel_esd_irq_ctrl_locked(struct dsi_panel *panel,
 		}
 	} else {
 		pr_debug("%s panel esd irq gpio invalid\n", panel->type);
+	}
+	pr_info("dsi_panel_esd_irq_ctrl_locked 0x%llx\n", panel->mi_cfg.panel_id);
+	if((panel->mi_cfg.panel_id == 0x4D38324100360200) || (panel->mi_cfg.panel_id == 0x4D38324100420200))
+	{
+		if (gpio_is_valid(mi_cfg->esd_err_irq_gpio_sec)) {
+			if (mi_cfg->esd_err_irq_sec) {
+				if (enable) {
+					if (!mi_cfg->esd_err_sec_enabled) {
+						desc = irq_to_desc(mi_cfg->esd_err_irq_sec);
+						if (!irq_settings_is_level(desc))
+							desc->istate &= ~IRQS_PENDING;
+						enable_irq_wake(mi_cfg->esd_err_irq_sec);
+						enable_irq(mi_cfg->esd_err_irq_sec);
+						mi_cfg->esd_err_sec_enabled = true;
+						pr_info("%s panel esd2 irq is enable\n", panel->type);
+					}
+				} else {
+					if (mi_cfg->esd_err_sec_enabled) {
+						disable_irq_wake(mi_cfg->esd_err_irq_sec);
+						disable_irq_nosync(mi_cfg->esd_err_irq_sec);
+						mi_cfg->esd_err_sec_enabled = false;
+						pr_info("%s panel esd2 irq is disable\n", panel->type);
+					}
+				}
+			}
+		} else {
+			pr_info("%s panel esd2 irq gpio invalid\n", panel->type);
+		}
 	}
 	pr_info("dsi_panel_esd_irq_ctrl_locked 0x%llx\n", panel->mi_cfg.panel_id);
 	if((panel->mi_cfg.panel_id == 0x4D38324100360200) || (panel->mi_cfg.panel_id == 0x4D38324100420200))
@@ -4216,14 +4244,14 @@ int dsi_panel_set_disp_param(struct dsi_panel *panel, u32 param)
 					switch (mi_cfg->doze_brightness_state) {
 					case DOZE_BRIGHTNESS_HBM:
 						mi_dsi_update_lhbm_cmd_87reg(panel, DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT, mi_cfg->doze_hbm_dbv_level);
-						pr_debug("DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT in doze_hbm_dbv_level\n");
+						pr_info("DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT in doze_hbm_dbv_level\n");
 						break;
 					case DOZE_BRIGHTNESS_LBM:
 						mi_dsi_update_lhbm_cmd_87reg(panel, DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT, mi_cfg->doze_lbm_dbv_level);
-						pr_debug("DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT in doze_lbm_dbv_level\n");
+						pr_info("DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT in doze_lbm_dbv_level\n");
 						break;
 					default:
-						pr_debug("DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT defaults\n");
+						pr_info("DSI_CMD_SET_MI_FOD_LHBM_WHITE_110NIT defaults\n");
 						break;
 					}
 				}

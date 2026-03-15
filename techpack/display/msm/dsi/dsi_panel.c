@@ -21,7 +21,7 @@
 #include "xiaomi_frame_stat.h"
 #include "dsi_mi_feature.h"
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 
@@ -978,7 +978,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 			    panel->mi_cfg.panel_id == 0x4C38314100420400 ||
 			    panel->mi_cfg.panel_id == 0x4D38324100360200 ||
 			    panel->mi_cfg.panel_id == 0x4D38324100420200)) {
-		DSI_DEBUG("set insert black \n");
+		DSI_INFO("set insert black \n");
 		dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_INSERT_BLACK);
 		usleep_range((6 * 1000),(6 * 1000) + 10);
 	}
@@ -1031,7 +1031,7 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 
 	if (mi_cfg->last_bl_level == 0 && bl_lvl && (panel->host_config.cphy_strength || panel->mi_cfg.panel_id == 0x4C38314100420400 ||
 		panel->mi_cfg.panel_id == 0x4D38324100360200 || panel->mi_cfg.panel_id == 0x4D38324100420200)){
-		DSI_DEBUG("disable insert black \n");
+		DSI_INFO("disable insert black \n");
 		dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_DISABLE_INSERT_BLACK);
 	}
 
@@ -2090,7 +2090,7 @@ static int dsi_panel_parse_phy_props(struct dsi_panel *panel)
 	struct dsi_parser_utils *utils = &panel->utils;
 	const char *name = panel->name;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
     if (e404_data.dtbo_type == 1) {
         props->panel_width_mm = e404_data.panel_width;
 		props->panel_height_mm = e404_data.panel_height;
@@ -2099,6 +2099,27 @@ static int dsi_panel_parse_phy_props(struct dsi_panel *panel)
 		props->panel_width_mm = e404_data.oem_panel_width;
 		props->panel_height_mm = e404_data.oem_panel_height;
 		pr_alert("E404: Overriding DTBO panel height & width for dtbo type 2");
+	} else if (e404_data.dtbo_type == 3) {
+		props->panel_width_mm = e404_data.panel_width_pipa;
+		props->panel_height_mm = e404_data.panel_height_pipa;
+		pr_alert("E404: Overriding DTBO panel height & width for dtbo type 3 (pipa)");
+	} else if (e404_data.dtbo_type == 4) {
+		props->panel_width_mm = e404_data.oem_panel_width_pipa;
+		props->panel_height_mm = e404_data.oem_panel_height_pipa;
+		pr_alert("E404: Overriding DTBO panel height & width for dtbo type 4 (pipa)");
+	} else {
+        rc = utils->read_u32(utils->data, "qcom,mdss-pan-physical-width-dimension", &val);
+        props->panel_width_mm = val;
+		rc = utils->read_u32(utils->data, "qcom,mdss-pan-physical-height-dimension", &val);
+		props->panel_height_mm = val;
+		pr_alert("E404: Using default DTBO panel height & width");
+    }
+#else
+	rc = utils->read_u32(utils->data, "qcom,mdss-pan-physical-width-dimension", &val);
+	if (rc) {
+		DSI_DEBUG("[%s] Physical panel width is not defined\n", name);
+		props->panel_width_mm = 0;
+		rc = 0;
 	} else {
         rc = utils->read_u32(utils->data, "qcom,mdss-pan-physical-width-dimension", &val);
         props->panel_width_mm = val;
@@ -5148,7 +5169,7 @@ int dsi_panel_switch(struct dsi_panel *panel)
 	}
 
 	if ((panel->mi_cfg.panel_id == 0x4C334100420200 || panel->mi_cfg.panel_id == 0x4A3200420201) && panel->mi_cfg.in_aod) {
-		DSI_DEBUG("In AOD, skip set fps \n");
+		DSI_INFO("In AOD, skip set fps \n");
 		return rc;
 	}
 

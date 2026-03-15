@@ -709,18 +709,8 @@ KBUILD_CFLAGS  += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
 KBUILD_LDFLAGS += $(call cc-option,-mllvm -enable-ml-inliner=release)
 KBUILD_LDFLAGS += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
 
-KBUILD_CFLAGS  += $(call cc-option,-mllvm -enable-ml-inliner=release)
-KBUILD_CFLAGS  += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
-KBUILD_LDFLAGS += $(call cc-option,-mllvm -enable-ml-inliner=release)
-KBUILD_LDFLAGS += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
-
-KBUILD_CFLAGS  += $(call cc-option,-mllvm -enable-ml-inliner=release)
-KBUILD_CFLAGS  += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
-KBUILD_LDFLAGS += $(call cc-option,-mllvm -enable-ml-inliner=release)
-KBUILD_LDFLAGS += $(call cc-option,-mllvm -regalloc-enable-advisor=release)
-
-KBUILD_CFLAGS   += -march=armv8.2-a+lse+crypto+dotprod
-KBUILD_AFLAGS   += -march=armv8.2-a+lse+crypto+dotprod
+KBUILD_CFLAGS   += -mcpu=cortex-a55
+KBUILD_AFLAGS   += -mcpu=cortex-a55
 else
 KBUILD_CFLAGS	+= -fgraphite-identity -floop-nest-optimize
 KBUILD_CFLAGS	+= -fipa-pta -fgcse-sm
@@ -824,7 +814,7 @@ KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 KBUILD_CFLAGS += $(call cc-disable-warning, default-const-init-unsafe)
 
 ifdef CONFIG_LTO_CLANG
-KBUILD_LDFLAGS += --lto-O3 --plugin-opt=O3 --strip-debug
+KBUILD_LDFLAGS += -O3 --lto-O3 --plugin-opt=O3 --strip-debug
 else
 KBUILD_LDFLAGS += --strip-debug
 endif

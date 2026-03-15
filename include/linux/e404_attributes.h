@@ -14,23 +14,26 @@
 bool e404_comm_blocked(const char *comm);
 
 struct e404_attributes {
-    int cpufreq;
+    int effcpu;
     int rom_type;
     int dtbo_type;
     int batt_profile;
     int kgsl_skip_zeroing;
     int file_sync;
-    int avoid_dirty_pte;
+    char bg_blocklist[E404_BLOCKLIST_STRLEN];
     int panel_width;
     int panel_height;
+    int panel_width_pipa;
+    int panel_height_pipa;
     int oem_panel_width;
     int oem_panel_height;
-    char bg_blocklist[E404_BLOCKLIST_STRLEN];
+    int oem_panel_width_pipa;
+    int oem_panel_height_pipa;
 };
 
 extern struct e404_attributes e404_data;
 
-extern int early_cpufreq;
+extern int early_effcpu;
 extern int early_rom_type;
 extern int early_dtbo_type;
 extern int early_batt_profile;

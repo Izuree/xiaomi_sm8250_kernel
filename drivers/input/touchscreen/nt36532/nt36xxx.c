@@ -998,11 +998,20 @@ static int32_t nvt_flash_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
+#ifdef HAVE_PROC_OPS
 static const struct proc_ops nvt_flash_fops = {
 	.proc_open = nvt_flash_open,
 	.proc_release = nvt_flash_close,
 	.proc_read = nvt_flash_read,
 };
+#else
+static const struct file_operations nvt_flash_fops = {
+	.owner = THIS_MODULE,
+	.open = nvt_flash_open,
+	.release = nvt_flash_close,
+	.read = nvt_flash_read,
+};
+#endif
 
 /*******************************************************
 Description:
@@ -1420,7 +1429,7 @@ static int32_t nvt_parse_dt(struct device *dev)
 
 static int nvt_get_panel_type(struct nvt_ts_data *ts_data)
 {
-	int i = 0;
+	int i;
 	int j;
 	u8 *lockdown = ts_data->lockdown_info;
 	struct nvt_config_info *panel_list = ts->config_array;

@@ -471,10 +471,17 @@ static int adsp_sleepmon_open(struct inode *inode, struct file *file)
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 static const struct proc_ops adsp_sleepmon_fops = {
 	.proc_open		= adsp_sleepmon_open,
 	.proc_read		= seq_read,
 };
+#else
+static const struct file_operations adsp_sleepmon_fops = {
+	.open		= adsp_sleepmon_open,
+	.read		= seq_read,
+};
+#endif
 
 static int adsp_sleepmon_compact_show(struct seq_file *seq, void *v)
 {
@@ -520,10 +527,17 @@ static int adsp_sleepmon_compact_open(struct inode *inode, struct file *file)
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 static const struct proc_ops adsp_sleepmon_compact_fops = {
 	.proc_open		= adsp_sleepmon_compact_open,
 	.proc_read		= seq_read,
 };
+#else
+static const struct file_operations adsp_sleepmon_compact_fops = {
+	.open		= adsp_sleepmon_compact_open,
+	.read		= seq_read,
+};
+#endif
 /*----adsp subsystem sleep info node end----*/
 
 
@@ -573,10 +587,17 @@ static int cdsp_sleepmon_open(struct inode *inode, struct file *file)
 }
 
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 static const struct proc_ops cdsp_sleepmon_fops = {
 	.proc_open		= cdsp_sleepmon_open,
 	.proc_read		= seq_read,
 };
+#else
+static const struct file_operations cdsp_sleepmon_fops = {
+	.open		= cdsp_sleepmon_open,
+	.read		= seq_read,
+};
+#endif
 
 static int cdsp_sleepmon_compact_show(struct seq_file *seq, void *v)
 {
@@ -622,10 +643,17 @@ static int cdsp_sleepmon_compact_open(struct inode *inode, struct file *file)
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 static const struct proc_ops cdsp_sleepmon_compact_fops = {
 	.proc_open		= cdsp_sleepmon_compact_open,
 	.proc_read		= seq_read,
 };
+#else
+static const struct file_operations cdsp_sleepmon_compact_fops = {
+	.open		= cdsp_sleepmon_compact_open,
+	.read		= seq_read,
+};
+#endif
 /*----cdsp subsystem sleep info node end----*/
 
 
@@ -675,10 +703,17 @@ static int slpi_sleepmon_open(struct inode *inode, struct file *file)
 }
 
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 static const struct proc_ops slpi_sleepmon_fops = {
 	.proc_open		= slpi_sleepmon_open,
 	.proc_read		= seq_read,
 };
+#else
+static const struct file_operations slpi_sleepmon_fops = {
+	.open		= slpi_sleepmon_open,
+	.read		= seq_read,
+};
+#endif
 
 static int slpi_sleepmon_compact_show(struct seq_file *seq, void *v)
 {
@@ -725,17 +760,24 @@ static int slpi_sleepmon_compact_open(struct inode *inode, struct file *file)
 }
 
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0))
 static const struct proc_ops slpi_sleepmon_compact_fops = {
 	.proc_open		= slpi_sleepmon_compact_open,
 	.proc_read		= seq_read,
 };
+#else
+static const struct file_operations slpi_sleepmon_compact_fops = {
+	.open		= slpi_sleepmon_compact_open,
+	.read		= seq_read,
+};
+#endif
 /*----slpi subsystem sleep info node end----*/
 
 
 static int __init subsys_sleepmon_init(void)
 {
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (e404_data.rom_type != 3) {
 		pr_alert("E404: Skipping subsys_sleepmon init\n");
 		return 0;

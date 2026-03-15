@@ -7,7 +7,7 @@
 #include <linux/seq_file.h>
 #include <linux/irq.h>
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 
@@ -21,7 +21,7 @@ static int __init oemports10t_init(void) {
 	static struct proc_dir_entry *link_t;
 	int ret = 0;
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 	if (e404_data.rom_type != 3) {
 		pr_alert("E404: Skipping oplus link init\n");
 		return 0;

@@ -13,7 +13,7 @@
 #include "kgsl_pool.h"
 #include "kgsl_sharedmem.h"
 
-#ifdef CONFIG_E404_SIGNATURE
+#ifdef CONFIG_E404_ATTRIBUTES
 #include <linux/e404_attributes.h>
 #endif
 
@@ -340,7 +340,7 @@ int kgsl_pool_alloc_page(int *page_size, struct page **pages,
 	}
 
 done:
-	#ifdef CONFIG_E404_SIGNATURE
+	#ifdef CONFIG_E404_ATTRIBUTES
 	if (e404_data.kgsl_skip_zeroing == 0)
 		kgsl_zero_page(page, order, dev);
 	#else

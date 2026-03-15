@@ -160,16 +160,8 @@ static inline pte_t set_pte_bit(pte_t pte, pgprot_t prot)
 static inline pte_t pte_mkwrite(pte_t pte)
 {
 	pte = set_pte_bit(pte, __pgprot(PTE_WRITE));
-#ifdef CONFIG_E404_SIGNATURE
-	if (e404_data.avoid_dirty_pte == 1) {
-		if (pte_sw_dirty(pte))
-			pte = clear_pte_bit(pte, __pgprot(PTE_RDONLY));
-	} else {
+	if (pte_sw_dirty(pte))
 		pte = clear_pte_bit(pte, __pgprot(PTE_RDONLY));
-	}
-#else
-	pte = clear_pte_bit(pte, __pgprot(PTE_RDONLY));
-#endif
 	return pte;
 }
 
