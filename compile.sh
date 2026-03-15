@@ -44,9 +44,9 @@ case "$*" in
         export PATH="$BASE_DIR/toolchains/llvm-clang/bin:$PATH"
         TC="LLVM-Clang"
         ;;
-    *lilium*)
+    *gf*)
         export PATH="$BASE_DIR/toolchains/lilium-clang/bin:$PATH"
-        TC="Lilium-Clang"
+        TC="gf-Clang"
         ;;
     *eva*)
         GCC64_DIR="$BASE_DIR/toolchains/gcc/gcc-arm64/bin/"
@@ -61,9 +61,9 @@ case "$*" in
         TC="GCC"
         ;;
     *)
-        if [[ -d "$BASE_DIR/toolchains/lilium-clang" ]]; then
-            export PATH="$BASE_DIR/toolchains/lilium-clang/bin:$PATH"
-            TC="Lilium-Clang"
+        if [[ -d "$BASE_DIR/toolchains/gf-clang" ]]; then
+            export PATH="$BASE_DIR/toolchains/gf-clang/bin:$PATH"
+            TC="gf-Clang"
         elif [[ -d "$BASE_DIR/toolchains/aosp-clang" ]]; then
             export PATH="$BASE_DIR/toolchains/aosp-clang/bin:$PATH"
             TC="AOSP-Clang"
