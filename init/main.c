@@ -106,6 +106,7 @@ static int kernel_init(void *);
 
 extern void init_IRQ(void);
 extern void radix_tree_init(void);
+extern void mark_after_kernel_init(void);
 
 /*
  * Debug helper: via this flag we know that we are in 'early bootup code'
@@ -1115,6 +1116,7 @@ static int __ref kernel_init(void *unused)
 	pti_finalize();
 
 	system_state = SYSTEM_RUNNING;
+	mark_after_kernel_init();
 	numa_default_policy();
 
 	rcu_end_inkernel_boot();
