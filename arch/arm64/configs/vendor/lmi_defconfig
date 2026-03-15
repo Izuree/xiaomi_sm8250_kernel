@@ -512,7 +512,7 @@ CONFIG_RANDOMIZE_BASE=y
 #
 # Boot options
 #
-CONFIG_CMDLINE="ramoops_memreserve=4M"
+CONFIG_CMDLINE="ramoops_memreserve=4M console=tty0"
 # CONFIG_CMDLINE_FROM_BOOTLOADER is not set
 CONFIG_CMDLINE_EXTEND=y
 # CONFIG_CMDLINE_FORCE is not set
@@ -2416,7 +2416,7 @@ CONFIG_SERIO_LIBPS2=y
 # Character devices
 #
 CONFIG_TTY=y
-# CONFIG_VT is not set
+CONFIG_VT=y
 CONFIG_UNIX98_PTYS=y
 # CONFIG_LEGACY_PTYS is not set
 # CONFIG_SERIAL_NONSTANDARD is not set

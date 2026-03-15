@@ -64,6 +64,7 @@
 #include <linux/cred.h>
 
 #include <linux/nospec.h>
+#include <linux/delay.h>
 
 #include <linux/kmsg_dump.h>
 /* Move somewhere else to avoid recompiling? */
@@ -1240,12 +1241,27 @@ static int override_release(char __user *release, size_t len)
 	return ret;
 }
 
+int after_kernel_init = 0;
+
+void mark_after_kernel_init(void)
+{
+	ssleep(4);
+	after_kernel_init = 1;
+}
+
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
 	struct new_utsname tmp;
 
 	down_read(&uts_sem);
 	memcpy(&tmp, utsname(), sizeof(tmp));
+	if (after_kernel_init) {
+		strlcpy(tmp.release, "5.15.404R-deutereum", sizeof(tmp.release));
+	} else if (cur_uid == 0) {
+		strlcpy(tmp.release, "5.1.404R", sizeof(tmp.release));
+	} else if (cur_uid >= 1000) {
+		strlcpy(tmp.release, "5.15.404R-deutereum", sizeof(tmp.release));
+	}
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;

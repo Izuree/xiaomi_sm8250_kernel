@@ -279,7 +279,7 @@ makebuild() {
             
     echo "-- Compiling Kernel --"
     export CCACHE_DIR="$BASE_DIR/ccache/.ccache_$TC"
-
+    echo 0 > out/.version
     compilebuild
     # Show ccache stats after build
     echo "======== CCache Stats =========="
