@@ -1245,7 +1245,7 @@ static int override_release(char __user *release, size_t len)
 int after_kernel_init = 0;
 static int mark_after_kernel_init_thread(void *unused)
 {
-    ssleep(10);
+    ssleep(5);
     after_kernel_init = 1;
     return 0;
 }
@@ -1265,7 +1265,7 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	if (after_kernel_init) {
 		strlcpy(tmp.release, "5.15.404R-deutereum", sizeof(tmp.release));
 	} else if (cur_uid == 0) {
-		strlcpy(tmp.release, "4.19.404R", sizeof(tmp.release));
+		strlcpy(tmp.release, "5.1.404R", sizeof(tmp.release));
 	} else if (cur_uid >= 1000) {
 		strlcpy(tmp.release, "5.15.404R-deutereum", sizeof(tmp.release));
 	}
