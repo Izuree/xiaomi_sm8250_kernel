@@ -227,17 +227,24 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
 
 	return l_freq;
 }
-
 static inline unsigned long apply_dvfs_headroom(unsigned long util, int cpu)
 {
-    unsigned long cap = capacity_orig_of(cpu);
+    unsigned long capacity = capacity_orig_of(cpu);
 
-	if (util < (cap >> 4)) // suppress noise < ~6.25%
+    if (util < (capacity >> 4)) // suppress noise < ~6.25%
         return util;
 
-    util += util >> 2; // flat 25% headroom
+    /* 9.4% of capacity threshold */
+    unsigned long min_util = (capacity >> 4) + (capacity >> 5);
 
-    return min(util, cap);
+    /* Suppress boosting below the threshold */
+    unsigned long headroom = (capacity - util);
+    if (util < min_util) {
+        unsigned long ratio = (util << 8) / (min_util + 1U);
+        headroom = (headroom * ratio * ratio) >> 16;
+    }
+
+    return util + headroom;
 }
 
 unsigned long sugov_effective_cpu_perf(int cpu, unsigned long actual,
