@@ -1252,6 +1252,7 @@ void mark_after_kernel_init(void)
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
 	struct new_utsname tmp;
+	uid_t cur_uid = from_kuid_munged(current_user_ns(), current_uid());
 
 	down_read(&uts_sem);
 	memcpy(&tmp, utsname(), sizeof(tmp));
