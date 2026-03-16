@@ -62,6 +62,7 @@
 #include <linux/rcupdate.h>
 #include <linux/uidgid.h>
 #include <linux/cred.h>
+#include <linux/kthread.h>
 
 #include <linux/nospec.h>
 #include <linux/delay.h>
@@ -1242,11 +1243,16 @@ static int override_release(char __user *release, size_t len)
 }
 
 int after_kernel_init = 0;
+static int mark_after_kernel_init_thread(void *unused)
+{
+    ssleep(10);
+    after_kernel_init = 1;
+    return 0;
+}
 
 void mark_after_kernel_init(void)
 {
-	ssleep(4);
-	after_kernel_init = 1;
+    kthread_run(mark_after_kernel_init_thread, NULL, "after_kernel_init");
 }
 
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
@@ -1257,11 +1263,11 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 	down_read(&uts_sem);
 	memcpy(&tmp, utsname(), sizeof(tmp));
 	if (after_kernel_init) {
-		strlcpy(tmp.release, "5.10.404R", sizeof(tmp.release));
+		strlcpy(tmp.release, "5.15.404R-deutereum", sizeof(tmp.release));
 	} else if (cur_uid == 0) {
-		strlcpy(tmp.release, "4.19", sizeof(tmp.release));
+		strlcpy(tmp.release, "4.19.404R", sizeof(tmp.release));
 	} else if (cur_uid >= 1000) {
-		strlcpy(tmp.release, "5.10.404R", sizeof(tmp.release));
+		strlcpy(tmp.release, "5.15.404R-deutereum", sizeof(tmp.release));
 	}
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
