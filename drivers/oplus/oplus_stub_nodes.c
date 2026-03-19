@@ -46,9 +46,9 @@ static ssize_t ufs_read_mb_proc_write(struct file *file, const char __user *buf,
                         ufs_total_read_mb, sizeof(ufs_total_read_mb));
 }
 
-static const struct proc_ops ufs_read_mb_proc_ops = {
-    .proc_read  = ufs_read_mb_proc_read,
-    .proc_write = ufs_read_mb_proc_write,
+static const struct file_operations ufs_read_mb_proc_ops = {
+    .read  = ufs_read_mb_proc_read,
+    .write = ufs_read_mb_proc_write,
 };
 
 static ssize_t ufs_write_mb_proc_read(struct file *file, char __user *buf, size_t count, loff_t *ppos) {
@@ -57,9 +57,9 @@ static ssize_t ufs_write_mb_proc_read(struct file *file, char __user *buf, size_
 static ssize_t ufs_write_mb_proc_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos) {
     return buffer_write(file, buf, count, ppos, ufs_total_write_mb, sizeof(ufs_total_write_mb));
 }
-static const struct proc_ops ufs_write_mb_proc_ops = {
-    .proc_read  = ufs_write_mb_proc_read,
-    .proc_write = ufs_write_mb_proc_write,
+static const struct file_operations ufs_write_mb_proc_ops = {
+    .read  = ufs_write_mb_proc_read,
+    .write = ufs_write_mb_proc_write,
 };
 static ssize_t dummy_zero_read(struct file *file, char __user *buf,
                                size_t count, loff_t *ppos)
@@ -71,9 +71,9 @@ static ssize_t dummy_zero_read(struct file *file, char __user *buf,
 static ssize_t dummy_sink_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos) {
     return count; 
 }
-static const struct proc_ops dummy_proc_ops = {
-    .proc_read  = dummy_zero_read,
-    .proc_write = dummy_sink_write,
+static const struct file_operations dummy_proc_ops = {
+    .read  = dummy_zero_read,
+    .write = dummy_sink_write,
 };
 
 static ssize_t lcd_info_read(struct file *file, char __user *buf,
@@ -88,9 +88,9 @@ static ssize_t lcd_info_write(struct file *file, const char __user *buf,
     return buffer_write(file, buf, count, ppos,
                         lcd_panel_info, sizeof(lcd_panel_info));
 }
-static const struct proc_ops lcd_info_proc_ops = {
-    .proc_read  = lcd_info_read,
-    .proc_write = lcd_info_write,
+static const struct file_operations lcd_info_proc_ops = {
+    .read  = lcd_info_read,
+    .write = lcd_info_write,
 };
 
 static ssize_t lcd_s_read(struct file *file, char __user *buf,
@@ -100,9 +100,9 @@ static ssize_t lcd_s_read(struct file *file, char __user *buf,
     return simple_read_from_buffer(buf, count, ppos, none_str, sizeof(none_str) - 1);
 }
 
-static const struct proc_ops lcd_s_proc_ops = {
-    .proc_read  = lcd_s_read,
-    .proc_write = dummy_sink_write,     // reuse dummy write
+static const struct file_operations lcd_s_proc_ops = {
+    .read  = lcd_s_read,
+    .write = dummy_sink_write,     // reuse dummy write
 };
 
 static ssize_t mutual_cmd_show(struct device *dev, struct device_attribute *attr, char *buf) {
