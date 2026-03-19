@@ -833,3 +833,4 @@ And public attribution of xiaomi platforms(like J1 and so and)
 		};
 	};
 };
+#include "lmi-thermal-deutereum.dtsi"

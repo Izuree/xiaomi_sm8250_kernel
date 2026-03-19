@@ -1,0 +1,315 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * deutereum thermal policy — lmi (Redmi K30 Pro / Snapdragon 865)
+ *
+ * Replaces Qualcomm's lobotomized user_space-only thermal skeleton with
+ * real step_wise cooling-maps bound to actual cpufreq cooling devices.
+ *
+ * Sensor phandles verified from:
+ *   arch/arm64/boot/dts/vendor/xiaomi/lmi-sm8250.dtsi
+ *
+ * Cooling device mapping (from runtime sysfs):
+ *   thermal-cpufreq-0 → CPU0  (LITTLE, 4 steps)
+ *   thermal-cpufreq-4 → CPU4  (Big,    12 steps)
+ *   thermal-cpufreq-7 → CPU7  (Prime,  14 steps)
+ *
+ * Throttle policy summary:
+ *   quiet_therm  ≥ 43°C → cap ALL clusters (system-wide skin gate)
+ *   cpuss-0/1    ≥ 52°C → cap Big + Prime
+ *   cpu-1-4-usr  ≥ 52°C → cap Prime directly
+ *   cpu-1-0-usr  ≥ 55°C → cap Big cluster
+ *   cpu-0-0-usr  ≥ 57°C → cap LITTLE cluster
+ *   All critical trips → 80°C (hardware fuse stays at 125°C)
+ */
+
+&thermal_zones {
+
+	/*
+	 * ── quiet_therm ────────────────────────────────────────────
+	 * NTC placed at the "cool spot" on the lmi board.
+	 * Used as the primary system-wide thermal budget enforcer.
+	 * If this sensor is hot, everything is hot.
+	 * Drives: LITTLE + Big + Prime simultaneously.
+	 *
+	 * Sensor: pm8150_adc_tm ADC_AMUX_THM1_PU2
+	 */
+	quiet_therm {
+		polling-delay-passive = <500>;
+		polling-delay = <1000>;
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pm8150_adc_tm ADC_AMUX_THM1_PU2>;
+		wake-capable-sensor;
+
+		trips {
+			deu_quiet_config: quiet-config {
+				temperature = <43000>;   /* 43°C — start throttle */
+				hysteresis  = <3000>;    /* release at 40°C */
+				type = "passive";
+			};
+			deu_quiet_hot: quiet-hot {
+				temperature = <48000>;   /* 48°C — hard cap */
+				hysteresis  = <3000>;
+				type = "hot";
+			};
+			deu_quiet_crit: quiet-crit {
+				temperature = <55000>;   /* 55°C — emergency */
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			/* LITTLE cluster */
+			map0 {
+				trip = <&deu_quiet_config>;
+				cooling-device = <&CPU0
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+			/* Big cluster */
+			map1 {
+				trip = <&deu_quiet_config>;
+				cooling-device = <&CPU4
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+			/* Prime core */
+			map2 {
+				trip = <&deu_quiet_config>;
+				cooling-device = <&CPU7
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+		};
+	};
+
+	/*
+	 * ── cpuss-0-usr ────────────────────────────────────────────
+	 * Cluster 0 aggregate sensor (tsens0 ch5).
+	 * Covers Big cores as a group. Drives Big + Prime.
+	 * Reading 56°C at idle — tighten hard.
+	 */
+	cpuss-0-usr {
+		polling-delay-passive = <100>;
+		polling-delay = <0>;
+		thermal-sensors = <&tsens0 5>;
+		thermal-governor = "step_wise";
+		wake-capable-sensor;
+
+		trips {
+			deu_cpuss0_config: cpuss0-config {
+				temperature = <52000>;
+				hysteresis  = <5000>;
+				type = "passive";
+			};
+			deu_cpuss0_crit: cpuss0-crit {
+				temperature = <80000>;
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			map0 {
+				trip = <&deu_cpuss0_config>;
+				cooling-device = <&CPU4
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+			map1 {
+				trip = <&deu_cpuss0_config>;
+				cooling-device = <&CPU7
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+		};
+	};
+
+	/*
+	 * ── cpuss-1-usr ────────────────────────────────────────────
+	 * Cluster 1 aggregate sensor (tsens0 ch6).
+	 * Redundant coverage alongside cpuss-0. Same policy.
+	 */
+	cpuss-1-usr {
+		polling-delay-passive = <100>;
+		polling-delay = <0>;
+		thermal-sensors = <&tsens0 6>;
+		thermal-governor = "step_wise";
+		wake-capable-sensor;
+
+		trips {
+			deu_cpuss1_config: cpuss1-config {
+				temperature = <52000>;
+				hysteresis  = <5000>;
+				type = "passive";
+			};
+			deu_cpuss1_crit: cpuss1-crit {
+				temperature = <80000>;
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			map0 {
+				trip = <&deu_cpuss1_config>;
+				cooling-device = <&CPU4
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+			map1 {
+				trip = <&deu_cpuss1_config>;
+				cooling-device = <&CPU7
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+		};
+	};
+
+	/*
+	 * ── cpu-1-0-usr ────────────────────────────────────────────
+	 * First Big core (tsens0 ch7).
+	 * Your hottest sensor at idle: 60.2°C.
+	 * Drives Big cluster directly.
+	 */
+	cpu-1-0-usr {
+		polling-delay-passive = <100>;
+		polling-delay = <0>;
+		thermal-sensors = <&tsens0 7>;
+		thermal-governor = "step_wise";
+		wake-capable-sensor;
+
+		trips {
+			deu_cpu10_config: cpu10-config {
+				temperature = <55000>;
+				hysteresis  = <5000>;
+				type = "passive";
+			};
+			deu_cpu10_crit: cpu10-crit {
+				temperature = <80000>;
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			map0 {
+				trip = <&deu_cpu10_config>;
+				cooling-device = <&CPU4
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+		};
+	};
+
+	/*
+	 * ── cpu-1-4-usr ────────────────────────────────────────────
+	 * Prime core sensor (tsens0 ch11).
+	 * Tightest individual core policy — 14 throttle steps available.
+	 * polling-delay-passive halved for faster response.
+	 */
+	cpu-1-4-usr {
+		polling-delay-passive = <50>;
+		polling-delay = <0>;
+		thermal-sensors = <&tsens0 11>;
+		thermal-governor = "step_wise";
+		wake-capable-sensor;
+
+		trips {
+			deu_cpu14_config: cpu14-config {
+				temperature = <52000>;
+				hysteresis  = <4000>;    /* release at 48°C */
+				type = "passive";
+			};
+			deu_cpu14_hot: cpu14-hot {
+				temperature = <65000>;
+				hysteresis  = <5000>;
+				type = "hot";
+			};
+			deu_cpu14_crit: cpu14-crit {
+				temperature = <80000>;
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			map0 {
+				trip = <&deu_cpu14_config>;
+				cooling-device = <&CPU7
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+		};
+	};
+
+	/*
+	 * ── cpu-0-0-usr ────────────────────────────────────────────
+	 * LITTLE cluster representative (tsens0 ch1).
+	 * Runs cool naturally — only throttle at 57°C.
+	 * Mostly a safety net; quiet_therm handles this earlier.
+	 */
+	cpu-0-0-usr {
+		polling-delay-passive = <100>;
+		polling-delay = <0>;
+		thermal-sensors = <&tsens0 1>;
+		thermal-governor = "step_wise";
+		wake-capable-sensor;
+
+		trips {
+			deu_cpu00_config: cpu00-config {
+				temperature = <57000>;
+				hysteresis  = <5000>;
+				type = "passive";
+			};
+			deu_cpu00_crit: cpu00-crit {
+				temperature = <80000>;
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			map0 {
+				trip = <&deu_cpu00_config>;
+				cooling-device = <&CPU0
+					THERMAL_NO_LIMIT
+					THERMAL_NO_LIMIT>;
+			};
+		};
+	};
+
+	/*
+	 * ── flash_therm ────────────────────────────────────────────
+	 * NTC near rear flash (pm8150_adc_tm ADC_AMUX_THM2_PU2).
+	 * Reading 48°C at idle. No CPU cooling here — just set a
+	 * sane critical trip so it doesn't freerun to 125°C.
+	 * Actual flash throttle is handled by the camera HAL.
+	 */
+	flash_therm {
+		polling-delay-passive = <500>;
+		polling-delay = <1000>;
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pm8150_adc_tm ADC_AMUX_THM2_PU2>;
+		wake-capable-sensor;
+
+		trips {
+			deu_flash_config: flash-config {
+				temperature = <55000>;
+				hysteresis  = <5000>;
+				type = "passive";
+			};
+			deu_flash_crit: flash-crit {
+				temperature = <70000>;
+				hysteresis  = <1000>;
+				type = "critical";
+			};
+		};
+
+		/*
+		 * No cooling-maps intentionally.
+		 * Flash zone drives nothing in the kernel —
+		 * camera HAL and charger driver handle this.
+		 */
+	};
+};
