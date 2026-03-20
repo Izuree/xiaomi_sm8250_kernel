@@ -10,6 +10,7 @@
 
 #define E404_BLOCKLIST_STRLEN 256
 #define E404_MAX_BLOCKED 16
+#define MAX_ALLOWED_UIDS_OVERRIDE 8
 
 bool e404_comm_blocked(const char *comm);
 
@@ -37,5 +38,7 @@ extern int early_effcpu;
 extern int early_rom_type;
 extern int early_dtbo_type;
 extern int early_batt_profile;
+extern u32 proc_version_allowed_uids[MAX_ALLOWED_UIDS_OVERRIDE];
+extern unsigned int proc_version_allowed_uids_count;
 
 #endif /* _E404_ATTRIBUTES_H */

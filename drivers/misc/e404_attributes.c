@@ -2,6 +2,11 @@
 
 #include <linux/e404_attributes.h>
 
+u32 proc_version_allowed_uids[MAX_ALLOWED_UIDS_OVERRIDE];
+unsigned int proc_version_allowed_uids_count = 0;
+EXPORT_SYMBOL(proc_version_allowed_uids);
+EXPORT_SYMBOL(proc_version_allowed_uids_count);
+
 static char blocked[E404_MAX_BLOCKED][TASK_COMM_LEN];
 static u8   blocked_len[E404_MAX_BLOCKED];
 static int  blocked_cnt;
@@ -115,6 +120,49 @@ bool e404_comm_blocked(const char *comm)
 
     return false;
 }
+static ssize_t version_override_show(struct kobject *kobj,
+        struct kobj_attribute *attr, char *buf)
+{
+    ssize_t len = 0;
+    unsigned int i;
+
+    for (i = 0; i < proc_version_allowed_uids_count; i++)
+        len += sysfs_emit_at(buf, len, "%u\n", proc_version_allowed_uids[i]);
+    return len;
+}
+
+static ssize_t version_override_store(struct kobject *kobj,
+        struct kobj_attribute *attr, const char *buf, size_t count)
+{
+    char tmp[64];
+    char *p, *tok;
+    unsigned int new_count = 0;
+    u32 new_uids[MAX_ALLOWED_UIDS_OVERRIDE];
+
+    if (count >= sizeof(tmp))
+        return -EINVAL;
+
+    memcpy(tmp, buf, count);
+    tmp[count] = '\0';
+    p = tmp;
+
+    while ((tok = strsep(&p, " \n\t")) != NULL) {
+        if (*tok == '\0')
+            continue;
+        if (new_count >= MAX_ALLOWED_UIDS_OVERRIDE)
+            return -EINVAL;
+        if (kstrtou32(tok, 10, &new_uids[new_count]))
+            return -EINVAL;
+        new_count++;
+    }
+
+    memcpy(proc_version_allowed_uids, new_uids, new_count * sizeof(u32));
+    proc_version_allowed_uids_count = new_count;
+    return count;
+}
+
+static struct kobj_attribute version_override_attr =
+    __ATTR(version_override, 0600, version_override_show, version_override_store);
 EXPORT_SYMBOL_GPL(e404_comm_blocked);
 
 static void e404_rebuild_blocklist(char *buf)
@@ -225,6 +273,7 @@ static struct attribute *e404_attrs[] = {
     &oem_panel_height_attr.attr,
     &oem_panel_width_pipa_attr.attr,
     &oem_panel_height_pipa_attr.attr,
+    &version_override_attr.attr,
     NULL,
 };
 
